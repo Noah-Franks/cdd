@@ -7,7 +7,7 @@ normal_color="\e[0m"     # Terminal default
 location=""              # Where cdd should go to
 new=false                # Whether to make/update a destination
 
-usage_error_message="Usage: cdd [-n|-c|--new|--colorless|--version] <destination>"
+usage_error_message="Usage: cdd [-n|-c|--new|--colorless|--version] [<destination>]"
 version_number_message="Version 0.1"
 
 for argument in "$@"; do
@@ -38,7 +38,7 @@ for argument in "$@"; do
     
     elif [[ $argument = "-"* ]]; then
 
-        characters_processed=1
+        characters_processed=1   # Let's us know if any undefined flags were set
 
         if [[ $argument = *"n"* ]]; then
 
@@ -53,9 +53,6 @@ for argument in "$@"; do
             (( characters_processed += 1 ))
         fi
         
-        echo $characters_processed
-        echo ${#argument}
-        
         if [[ $characters_processed -ne ${#argument} ]]; then
             printf "Err: Unknown flag\n"
             printf "$usage_error_message\n"
@@ -64,16 +61,19 @@ for argument in "$@"; do
         fi
         
     elif [[ $location = "" ]]; then
+
         location=$argument
+
     else
         # Second potential location was passed in
+
         printf "$usage_error_message\n"
         exit 1
     fi
 done
 
 if [[ $location = "" ]]; then
-    
+    location="default"
 fi
 
 # Ensure environment is ready for cdd
@@ -87,16 +87,23 @@ fi
 if [[ $new = true ]]; then
     # Create or update destination
     
-    if [[ $# -eq 1 ]]; then
-        # Needs another argument
-        printf $failure_color"Err: Please supply a name\n" >&2
-        exit 1
-    fi
-    
     if [[ -f ~/.cdd/$2 ]]; then
-        printf "Updating destination\t$success_color$2\n"$normal_color
+
+        if [[ $location = "default" ]]; then
+            printf "Updating "$success_color"default"$normal_color" destination\n"
+        else
+            printf "Updating destination\t"$success_color$2"\n"$normal_color
+        fi
+            
     else
-        printf "Setting new destination\t$success_color$2\n"$normal_color
+        if [[ $location = "default" ]]; then
+            printf "Setting new "$success_color"default"$normal_color" destination\n"
+        else
+            printf "Setting new destination\t"$success_color$2"\n"$normal_color
+            
+        fi
+        
+        
     fi
     
     
