@@ -26,14 +26,14 @@ for argument in "$@"; do
         elif [[ $argument = "--version" ]]; then
 
             printf "$version_number_message\n"
-            exit 0
+            return 0
             
         else
 
             printf "Err: Unknown flag\n"
             printf "$usage_error_message\n"
             
-            exit 1
+            return 1
         fi
     
     elif [[ $argument = "-"* ]]; then
@@ -57,7 +57,7 @@ for argument in "$@"; do
             printf "Err: Unknown flag\n"
             printf "$usage_error_message\n"
             
-            exit 1
+            return 1
         fi
         
     elif [[ $location = "" ]]; then
@@ -68,7 +68,7 @@ for argument in "$@"; do
         # Second potential location was passed in
 
         printf "$usage_error_message\n"
-        exit 1
+        return 1
     fi
 done
 
@@ -88,24 +88,24 @@ if [[ $new = true ]]; then
     # Create or update destination
     
     if [[ -f ~/.cdd/$2 ]]; then
-
+        # Update destination
+        
         if [[ $location = "default" ]]; then
             printf "Updating "$success_color"default"$normal_color" destination\n"
         else
-            printf "Updating destination\t"$success_color$2"\n"$normal_color
+            printf "Updating destination"$success_color$2"\n"$normal_color
         fi
-            
+        
     else
         if [[ $location = "default" ]]; then
             printf "Setting new "$success_color"default"$normal_color" destination\n"
         else
-            printf "Setting new destination\t"$success_color$2"\n"$normal_color
-            
-        fi
-        
-        
+            printf "Setting new destination"$success_color$2"\n"$normal_color  
+        fi    
     fi
-    
-    
+
+    pwd > ~/.cdd/destinations/$location
+    return 0
 fi
 
+cd $(cat ~/.cdd/destinations/$location)
