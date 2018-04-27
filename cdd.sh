@@ -1,5 +1,21 @@
 #!/usr/bin/env bash
 
+
+# Ensure environment is ready for cdd
+if [ ! -d ~/.cdd ]; then
+    # First time, setup .cdd directory
+
+    printf "Attempting to install cdd for user "$USER"\n"
+    
+    mkdir -p ~/.cdd/destinations
+    sudo cp ./cdd.sh /usr/bin/cdd
+    cp ./cdd.sh ~/.cdd/cdd
+    
+    printf "Successfully installed cdd!\n"
+    exit 0
+fi
+
+
 # Parse arguments and determine what to do
 success_color="\e[32m"   # Green
 failure_color="\e[31m"   # Red
@@ -76,12 +92,6 @@ if [[ $location = "" ]]; then
     location="default"
 fi
 
-# Ensure environment is ready for cdd
-if [ ! -d ~/.cdd ]; then
-    # First time, setup .cdd directory
-    
-    mkdir -p ~/.cdd/destinations
-fi
 
 # Perform cdd
 if [[ $new = true ]]; then
@@ -108,4 +118,9 @@ if [[ $new = true ]]; then
     return 0
 fi
 
-cd $(cat ~/.cdd/destinations/$location)
+destination=$(cat ~/.cdd/destinations/$location 2> /dev/null)
+if [[ $? -ne 0 ]]; then
+    printf "No default destination set.\nSet it to the current directory using 'cdd -n'\n"
+    return 1
+fi
+cd destination
