@@ -11,7 +11,10 @@ if [ ! -d ~/.cdd ]; then
     sudo cp ./cdd.sh /usr/bin/cdd
     cp ./cdd.sh ~/.cdd/cdd
     
-    printf "Successfully installed cdd!\n"
+    printf "Successfully installed cdd!\n\n"
+
+    printf "To run cdd without issues, append the following to your .bashrc\n"
+    printf "\talias='. /usr/bin/cdd'\n\n"
     exit 0
 fi
 
@@ -23,7 +26,7 @@ normal_color="\e[0m"     # Terminal default
 location=""              # Where cdd should go to
 new=false                # Whether to make/update a destination
 
-usage_error_message="Usage: cdd [-n|-c|--new|--colorless|--version] [<destination>]"
+usage_error_message="Usage: cdd [-n|-c|-h|--new|--colorless|--help|--version] [<destination>]"
 version_number_message="Version 0.1"
 
 for argument in "$@"; do
@@ -97,20 +100,20 @@ fi
 if [[ $new = true ]]; then
     # Create or update destination
     
-    if [[ -f ~/.cdd/$2 ]]; then
+    if [[ -f ~/.cdd/destinations/$location ]]; then
         # Update destination
         
         if [[ $location = "default" ]]; then
             printf "Updating "$success_color"default"$normal_color" destination\n"
         else
-            printf "Updating destination"$success_color$2"\n"$normal_color
+            printf "Updating destination "$success_color$2"\n"$normal_color
         fi
         
     else
         if [[ $location = "default" ]]; then
             printf "Setting new "$success_color"default"$normal_color" destination\n"
         else
-            printf "Setting new destination"$success_color$2"\n"$normal_color  
+            printf "Setting new destination "$success_color$2"\n"$normal_color  
         fi    
     fi
 
@@ -120,7 +123,11 @@ fi
 
 destination=$(cat ~/.cdd/destinations/$location 2> /dev/null)
 if [[ $? -ne 0 ]]; then
-    printf "No default destination set.\nSet it to the current directory using 'cdd -n'\n"
+    if [[ $location = "default" ]]; then
+        printf "No default destination set.\nSet it to the current directory using 'cdd -n'\n"
+    else
+        printf "Destination "$failure_color$location$normal_color" not set.\n"
+    fi
     return 1
 fi
-cd destination
+cd $destination
