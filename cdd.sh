@@ -14,7 +14,7 @@ if [ ! -d ~/.cdd ]; then
     printf "Successfully installed cdd!\n\n"
 
     printf "To run cdd without issues, append the following to your .bashrc\n"
-    printf "\talias='. /usr/bin/cdd'\n\n"
+    printf "\talias cdd='. /usr/bin/cdd'\n\n"
     exit 0
 fi
 
@@ -24,9 +24,11 @@ success_color="\e[32m"   # Green
 failure_color="\e[31m"   # Red
 normal_color="\e[0m"     # Terminal default
 location=""              # Where cdd should go to
+list=false               # Whether to list all defined destinations
 new=false                # Whether to make/update a destination
 
-usage_error_message="Usage: cdd [-n|-c|-h|--new|--colorless|--help|--version] [<destination>]"
+
+usage_error_message="Usage: cdd [-n|-l|-c|-h|--new|--list|--colorless|--help|--version] [<destination>]"
 version_number_message="Version 0.1"
 
 for argument in "$@"; do
@@ -37,6 +39,10 @@ for argument in "$@"; do
             
             new=true
 
+        elif [[ $argument = "--list" ]]; then
+
+            list=true
+            
         elif [[ $argument = "--colorless" ]]; then
 
             success_color=""
@@ -62,6 +68,12 @@ for argument in "$@"; do
         if [[ $argument = *"n"* ]]; then
 
             new=true
+            (( characters_processed += 1 ))
+        fi
+
+        if [[ $argument = *"l"* ]]; then
+
+            list=true
             (( characters_processed += 1 ))
         fi
         
@@ -121,13 +133,33 @@ if [[ $new = true ]]; then
     return 0
 fi
 
+
+
+if [[ $list = true ]]; then
+    for destination_file in ~/.cdd/destinations/*; do
+        file_contents=$(cat $destination_file 2>/dev/null)
+        if [[ $? -eq 0 ]]; then
+            printf $success_color${destination_file##*/}$normal_color"\t"$file_contents"\n"
+        else
+            printf $failure_color"No destinations have been set"$normal_color"\n"
+        fi
+    done
+
+    if [[ $location = "default" ]]; then
+        return 0;
+    fi
+fi
+    
 destination=$(cat ~/.cdd/destinations/$location 2> /dev/null)
 if [[ $? -ne 0 ]]; then
     if [[ $location = "default" ]]; then
         printf "No default destination set.\nSet it to the current directory using 'cdd -n'\n"
     else
-        printf "Destination "$failure_color$location$normal_color" not set.\n"
+        printf "Destination "$failure_color$location$normal_color" not set\n"
     fi
     return 1
 fi
+
 cd $destination
+
+
